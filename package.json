@@ -1,0 +1,16 @@
+{
+  "name": "photoorganizer",
+  "version": "1.0.0",
+  "description": "Photo Organizer Tool which helps users to organise their photos and videos inside a folder.",
+  "main": "main.ts",
+  "scripts": {
+    "start": "electron .",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Akshay Navale",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^37.3.1"
+  }
+}

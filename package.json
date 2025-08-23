@@ -2,15 +2,19 @@
   "name": "photoorganizer",
   "version": "1.0.0",
   "description": "Photo Organizer Tool which helps users to organise their photos and videos inside a folder.",
-  "main": "main.ts",
+  "main": "dist/main/main.js",
   "scripts": {
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "tsc -p tsconfig.renderer.json",
+    "build": "npm run build:main && npm run build:renderer",
     "start": "electron .",
-    "build": "tsc",
+    "prestart": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Akshay Navale",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^37.3.1"
+    "electron": "^37.3.1",
+    "typescript": "^5.4.5"
   }
 }

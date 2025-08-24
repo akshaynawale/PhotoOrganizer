@@ -1,41 +1,77 @@
 import { app, BrowserWindow, ipcMain, dialog} from "electron";
 import path from "path";
-import { logAndSend } from "./channel_logger";
+import { ChannelLogger } from "./channel_logger";
 import { handleFolderOpen } from "./process_folder";
 
-let win: BrowserWindow | null = null;
 
-let createWindow = () => {
-    win = new BrowserWindow({
-        width: 800,
-        height: 600,
-        webPreferences: {
-            // attach the preload script to the renderer process
-            preload: path.join(__dirname, "preload.js")
-            // By removing nodeIntegration, you are making your app much more secure.
-            // contextIsolation will default to `true`, which is the recommended setting.
-        }
-    });
-    win.loadFile("index.html");
+/**
+ * PhotoOrganizer is the main class which is responsible to create the browser window 
+ * and loads the index.html file
+ */
+class PhotoOrganizer {
+    window: BrowserWindow| null;
+    logger: ChannelLogger| null;
+    logger_channel: string;
+    
+    constructor() {
+        this.window = null;    
+        this.logger = null;
+        this.logger_channel = "photo-organizer-logs";
+    }
 
-    // send message on the channel only when the window is ready  i.e finished loading
-    win.webContents.on('did-finish-load', () => {
-        logAndSend(win, "this is a message send on a channel");
-    })
+    /**
+     * init method is called to initialize the PhotoOrganizer by creating a BrowserWindow 
+     * instance  
+     */
+    init(): void {
+        this.window = new BrowserWindow({
+            width: 800,
+            height: 600, 
+            webPreferences: {
+                // attach the preload script to the renderer process
+                preload: path.join(__dirname, "preload.js")
+            }
+        });
+        // initialize the channel logger
+        this.logger = new ChannelLogger(this.window, this.logger_channel)
+
+        this.window.loadFile("index.html");
+        //following log message is just for testing and we need to remove this afterwards
+        this.window.webContents.on('did-finish-load', () => {
+            this.logger?.info("this is a message send on a channel")
+        })
+    }
 }
 
 
-// disabling hardware accerlation so we dont get warning like below
-// GetVSyncParametersIfAvailable() failed for 1 times
-app.disableHardwareAcceleration();
 
-app.whenReady().then(() => {
-    // Set up a Handler for the 'dialog:openDirectory' message
-    ipcMain.handle('dialog:openDirectory', handleFolderOpen);
+/**
+ * StartPhotoOrganizer is responsible for starting the app
+ */
+class StartPhotoOrganizer {
+    app: Electron.App;
+    photoOrganizer: PhotoOrganizer;
 
-    console.log("app is ready so creating window");
+    constructor(app: Electron.App) {
+        this.photoOrganizer = new PhotoOrganizer();
+        this.app = app;
+    }
+    
+    start(): void {
+        this.app.disableHardwareAcceleration();
 
-    createWindow();
+        this.app.whenReady().then(() => {
+            // Set up a Handler for the 'dialog:openDirectory' message
+            ipcMain.handle('dialog:openDirectory', handleFolderOpen);
+        
+            console.log("app is ready so creating window");
+        
+            this.photoOrganizer.init();
+        
+        })
+    }
 
-})
+}
 
+let photoApp = new StartPhotoOrganizer(app);
+photoApp.start();

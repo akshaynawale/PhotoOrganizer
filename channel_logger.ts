@@ -3,16 +3,31 @@ import log from "electron-log";
 
 
 /**
- * @param window - Browser window create by the main server
- * @param msg - string representing the log message we want to send to channel
- * this function logs the message and sends on a IPC (InterProcessCommunicaiton) channel
+ * ChannelLogger can be used to log messages on console as well as it sends the log messages on
+ * the IPC Channel
  */
-export function logAndSend(window: BrowserWindow|null, msg: string): void {
+export class ChannelLogger {
+    window: BrowserWindow;
+    channel: string;
 
-    log.info(msg);
-    if (window) {
-        console.log(msg);
-        window.webContents.send('send-to-frontend-channel', {message: msg, level: 'info'});
+    /**
+     * 
+     * @param window -  Browser window create by the main server
+     * @param channel - IPC channel to which logger should send the log messages
+     */
+    constructor(window: BrowserWindow, channel: string) {
+        this.window = window;
+        this.channel = channel;
     }
 
+    info(msg: string): void {
+        console.info(msg);
+        this.window.webContents.send('send-to-frontend-channel', {message: msg, level: "info"});
+    }
+
+    debug(msg: string): void {
+        console.debug(msg);
+        this.window.webContents.send('send-to-frontend-channel', {message: msg, level: "debug"});
+    }
+   
 }

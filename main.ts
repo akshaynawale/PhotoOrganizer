@@ -9,14 +9,12 @@ import { handleFolderOpen } from "./process_folder";
  * and loads the index.html file
  */
 class PhotoOrganizer {
-    window: BrowserWindow| null;
-    logger: ChannelLogger| null;
-    logger_channel: string;
+    private window!: BrowserWindow;
+    private logger!: ChannelLogger;
+    private readonly logger_channel: string;
     
     constructor() {
-        this.window = null;    
-        this.logger = null;
-        this.logger_channel = "send-to-frondend-channel";
+        this.logger_channel = "send-to-frontend-channel";
     }
 
     /**
@@ -39,7 +37,7 @@ class PhotoOrganizer {
         this.window.loadFile("index.html");
         //following log message is just for testing and we need to remove this afterwards
         this.window.webContents.on('did-finish-load', () => {
-            this.logger?.info("this is a message send on a channel")
+            this.logger.info("this is a message send on a channel")
         })
     }
 }

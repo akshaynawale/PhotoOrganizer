@@ -7,8 +7,8 @@ import log from "electron-log";
  * the IPC Channel
  */
 export class ChannelLogger {
-    window: BrowserWindow;
-    channel: string;
+    private window: BrowserWindow;
+    private readonly channel: string;
 
     /**
      * 

@@ -22,12 +22,12 @@ export class ChannelLogger {
 
     info(msg: string): void {
         console.info(msg);
-        this.window.webContents.send('send-to-frontend-channel', {message: msg, level: "info"});
+        this.window.webContents.send(this.channel, {message: msg, level: "info"});
     }
 
     debug(msg: string): void {
         console.debug(msg);
-        this.window.webContents.send('send-to-frontend-channel', {message: msg, level: "debug"});
+        this.window.webContents.send(this.channel, {message: msg, level: "debug"});
     }
    
 }

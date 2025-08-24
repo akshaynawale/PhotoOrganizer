@@ -16,7 +16,7 @@ class PhotoOrganizer {
     constructor() {
         this.window = null;    
         this.logger = null;
-        this.logger_channel = "photo-organizer-logs";
+        this.logger_channel = "send-to-frondend-channel";
     }
 
     /**
@@ -24,7 +24,7 @@ class PhotoOrganizer {
      * instance  
      */
     init(): void {
-        this.window = new BrowserWindow({
+        let window = new BrowserWindow({
             width: 800,
             height: 600, 
             webPreferences: {
@@ -32,8 +32,9 @@ class PhotoOrganizer {
                 preload: path.join(__dirname, "preload.js")
             }
         });
+        this.window = window;
         // initialize the channel logger
-        this.logger = new ChannelLogger(this.window, this.logger_channel)
+        this.logger = new ChannelLogger(window, this.logger_channel)
 
         this.window.loadFile("index.html");
         //following log message is just for testing and we need to remove this afterwards

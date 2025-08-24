@@ -1,6 +1,8 @@
 
 interface ElectronAPI {
     selectFolder: () => Promise<string | null>;
+    // function exposed from the server to send log message from server to frontend
+    handleLogMessage: (callback: (msg: {message: string, level: string}) => void ) => void;
 }
 
 declare global {
@@ -25,6 +27,16 @@ if (selectFolderBtn && logsDiv) {
             logsDiv.innerHTML += 'Folder selection was cancelled.<br/>';
         }
     });
+}
+
+
+// now lets add the logs from the server to the div 
+if (logsDiv) {
+    console.log("found logsDiv so adding a callback to the handleLogMessage function")
+    window.electronAPI.handleLogMessage((msg) => {
+        console.log('inside the callback function now got message: ($msg)');
+        logsDiv.innerHTML += `from server: ${msg.message}<br/>`;
+    })
 }
 
 // This makes the file a module and fixes the "declare global" error.

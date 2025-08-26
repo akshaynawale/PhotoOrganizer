@@ -43,7 +43,6 @@ class PhotoOrganizer {
 }
 
 
-
 /**
  * StartPhotoOrganizer is responsible for starting the app
  */

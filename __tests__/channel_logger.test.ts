@@ -19,13 +19,9 @@ describe('ChannelLogger', () => {
   const testChannel = 'test-channel';
   let logger: ChannelLogger;
 
-  beforeEach(() => {
-    // Reset mocks before each test to ensure test isolation
-    mockWebContents.send.mockClear();
-    logger = new ChannelLogger(mockBrowserWindow, testChannel);
-  });
+  logger = new ChannelLogger(mockBrowserWindow, testChannel);
 
-  // paramtrize test each row here is a test nput and output
+  // parametrize test each row here is a test input and output
   test.each([
     ["info", "info message", { message: "info message", level: "info"}],
     ["debug", "debug message", { message: "debug message", level: "debug"}]

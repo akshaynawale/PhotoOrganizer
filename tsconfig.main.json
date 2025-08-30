@@ -15,5 +15,5 @@
     "__tests__/**/*.ts",
     "lib/*.ts",
   ],
-  "exclude": ["node_modules", "renderer.ts", "dist"]
+  "exclude": ["node_modules", "renderer/renderer.ts", "dist"]
 }

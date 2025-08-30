@@ -1,4 +1,5 @@
 import { dialog } from "electron";
+import { promises as fs } from 'fs';
 
 
 /**
@@ -15,7 +16,18 @@ export async function handleFolderOpen() {
         console.log('User cancelled folder selection');
         return null;
     } else {
-        console.log(`Selected folder: ${filePaths[0]}`);
-        return filePaths[0];
+        const folderPath = filePaths[0];
+        console.log(`Selected folder: ${folderPath}`);
+
+        try {
+            const files = await fs.readdir(folderPath);
+            console.log("Files in the folder:");
+            files.forEach(file => {
+                console.log(file);
+            });
+        } catch (err) {
+            console.error('Error reading folder:', err);
+        }
+        return folderPath;
     }
 }

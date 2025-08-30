@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog} from "electron";
 import path from "path";
 import { ChannelLogger } from "./lib/channel_logger";
-import { handleFolderOpen } from "./lib/process_folder";
+import { handleFolderOpen, MediaFilesHandler } from "./lib/process_folder";
 
 
 /**
@@ -10,7 +10,7 @@ import { handleFolderOpen } from "./lib/process_folder";
  */
 class PhotoOrganizer {
     private window!: BrowserWindow;
-    private logger!: ChannelLogger;
+    logger!: ChannelLogger;
     private readonly logger_channel: string;
     
     constructor() {
@@ -49,6 +49,7 @@ class PhotoOrganizer {
 class StartPhotoOrganizer {
     app: Electron.App;
     photoOrganizer: PhotoOrganizer;
+    
 
     constructor(app: Electron.App) {
         this.photoOrganizer = new PhotoOrganizer();
@@ -57,19 +58,19 @@ class StartPhotoOrganizer {
     
     start(): void {
         this.app.disableHardwareAcceleration();
-
+        
         this.app.whenReady().then(() => {
             // Set up a Handler for the 'dialog:openDirectory' message
-            ipcMain.handle('dialog:openDirectory', handleFolderOpen);
-        
+
             console.log("app is ready so creating window");
-        
             this.photoOrganizer.init();
-        
+            const mediaFilesHandler = new MediaFilesHandler(this.photoOrganizer.logger);
+            ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen); 
         })
     }
 
 }
+
 
 let photoApp = new StartPhotoOrganizer(app);
 photoApp.start();

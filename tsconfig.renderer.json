@@ -11,5 +11,5 @@
     "resolveJsonModule": true
   },
   "include": ["./renderer/renderer.ts"],
-  "exclude": ["node_modules", "main/main.ts", "dist"]
+  "exclude": ["node_modules", "main/main.ts"]
 }

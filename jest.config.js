@@ -7,4 +7,9 @@ module.exports = {
   clearMocks: true,
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.main.json',  // make sure ts-jest reads your config
+    },
+  },
 };

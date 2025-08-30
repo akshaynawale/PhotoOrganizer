@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog} from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { ChannelLogger } from "./lib/channel_logger";
-import { handleFolderOpen, MediaFilesHandler } from "./lib/process_folder";
+import { MediaFilesHandler } from "./lib/process_folder";
 
 
 /**
@@ -12,7 +12,7 @@ class PhotoOrganizer {
     private window!: BrowserWindow;
     logger!: ChannelLogger;
     private readonly logger_channel: string;
-    
+
     constructor() {
         this.logger_channel = "send-to-frontend-channel";
     }
@@ -24,7 +24,7 @@ class PhotoOrganizer {
     init(): void {
         let window = new BrowserWindow({
             width: 800,
-            height: 600, 
+            height: 600,
             webPreferences: {
                 // attach the preload script to the renderer process
                 preload: path.join(__dirname, "preload.js")
@@ -49,23 +49,24 @@ class PhotoOrganizer {
 class StartPhotoOrganizer {
     app: Electron.App;
     photoOrganizer: PhotoOrganizer;
-    
+
+
 
     constructor(app: Electron.App) {
         this.photoOrganizer = new PhotoOrganizer();
         this.app = app;
     }
-    
+
     start(): void {
         this.app.disableHardwareAcceleration();
-        
+
         this.app.whenReady().then(() => {
             // Set up a Handler for the 'dialog:openDirectory' message
 
             console.log("app is ready so creating window");
             this.photoOrganizer.init();
             const mediaFilesHandler = new MediaFilesHandler(this.photoOrganizer.logger);
-            ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen); 
+            ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen);
         })
     }
 

@@ -1,4 +1,4 @@
-import { ChannelLogger } from '../channel_logger';
+import { ChannelLogger } from '../lib/channel_logger';
 import { BrowserWindow } from 'electron';
 
 // We need to mock the BrowserWindow and its webContents property for our unit test,
@@ -27,7 +27,7 @@ describe('ChannelLogger', () => {
     ["debug", "debug message", { message: "debug message", level: "debug"}]
   ])("test %s log message logging", (method, message, expectedPayload) => {
     // ACT
-    logger[method](message)
+    (logger as any)[method](message)
     
     // ASSERT
     expect(mockWebContents.send).toHaveBeenCalledTimes(1);

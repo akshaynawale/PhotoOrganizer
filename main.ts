@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog} from "electron";
 import path from "path";
-import { ChannelLogger } from "./channel_logger";
-import { handleFolderOpen } from "./process_folder";
+import { ChannelLogger } from "./lib/channel_logger";
+import { handleFolderOpen } from "./lib/process_folder";
 
 
 /**

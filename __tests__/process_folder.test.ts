@@ -28,27 +28,20 @@ const mockedFs = fs as jest.Mocked<typeof fs>;
 
 
 describe('handleFolderOpen', () => {
-    // Clear mock history and reset implementations before each test
-    beforeEach(() => {
-        jest.clearAllMocks();
 
-    });
+    const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+    } as unknown as ChannelLogger;
+
 
     it('should return null when the user cancels the dialog', async () => {
         // Arrange: Configure the mock to simulate a user cancellation.
         // `showOpenDialog` is async, so we use `mockResolvedValue`.
-        console.log("akshay mockedDialog: " + mockedDialog);
-        console.log("akshay mockedDialog: " + mockedDialog.showOpenDialog);
-
         mockedDialog.showOpenDialog.mockResolvedValue({
             canceled: true,
             filePaths: [],
         });
-
-        const mockLogger = {
-            info: jest.fn(),
-            debug: jest.fn(),
-        } as unknown as ChannelLogger;
 
         // Act
 
@@ -77,11 +70,6 @@ describe('handleFolderOpen', () => {
         // Mock the readdir to resolve with a fake file list
         mockedFs.readdir.mockResolvedValue(fakeFiles as any);
 
-        const mockLogger = {
-            info: jest.fn(),
-            debug: jest.fn(),
-        } as unknown as ChannelLogger;
-
         // Act
 
         const mediaFilesHandler = new MediaFilesHandler(mockLogger);
@@ -95,3 +83,40 @@ describe('handleFolderOpen', () => {
         expect(mockedFs.readdir).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('testing processFolderFiles', () => {
+
+    const mockLogger = {
+        info: jest.fn(),
+        debug: jest
+    };
+
+    it('with no images and videos', () => {
+        let files: Dirent[] = [];
+
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger as unknown as ChannelLogger);
+        mediaFilesHandler.processFolderFiles(files);
+        expect(mockLogger.info).toHaveBeenCalledTimes(4);
+        expect(mockLogger.info).toHaveBeenCalledWith("total images: 0");
+        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 0");
+        expect(mockLogger.info).toHaveBeenCalledWith("video files: ");
+        expect(mockLogger.info).toHaveBeenCalledWith("image files: ");
+    });
+
+    it('with some images and videos', () => {
+
+
+        let filenames: string[] = ["image1.jpg", "image2.png", "vid.mp4", "document.txt"];
+        let input = filenames.map(filename => ({ name: filename, isFile: () => true }));
+
+
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger as unknown as ChannelLogger);
+        mediaFilesHandler.processFolderFiles(input as unknown as Dirent[]);
+        expect(mockLogger.info).toHaveBeenCalledTimes(4);
+        expect(mockLogger.info).toHaveBeenCalledWith("total images: 2");
+        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 1");
+        expect(mockLogger.info).toHaveBeenCalledWith("video files: vid.mp4");
+        expect(mockLogger.info).toHaveBeenCalledWith("image files: image1.jpg,image2.png");
+    });
+
+})

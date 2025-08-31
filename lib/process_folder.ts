@@ -1,5 +1,5 @@
 import { dialog } from "electron";
-import { promises as fs, Dirent } from 'fs';
+import * as fs from 'fs';
 import path from 'path';
 import { ChannelLogger } from "./channel_logger";
 
@@ -24,7 +24,7 @@ export class MediaFilesHandler {
         return this.videoExtensions.has(path.extname(fileName).toLowerCase());
     }
 
-    processFolderFiles(files: Dirent[]) {
+    processFolderFiles(files: fs.Dirent[]) {
         const images: string[] = [];
         const videos: string[] = [];
 
@@ -61,7 +61,7 @@ export class MediaFilesHandler {
             console.log(`Selected folder: ${folderPath}`);
 
             try {
-                const files = await fs.readdir(folderPath, { withFileTypes: true });
+                const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
                 console.log("Files in the folder:");
                 this.processFolderFiles(files);
             } catch (err) {
@@ -72,4 +72,58 @@ export class MediaFilesHandler {
     }
 
 
+}
+
+
+/**
+ * FileGrouper Interface to get Group key
+ */
+interface FileGrouper {
+
+    getKey(file: fs.Dirent): Promise<string>;
+
+}
+
+/**
+ * ByYearGrouper is used to group files with create date year
+ */
+export class ByYearGrouper {
+
+    async getKey(file: fs.Dirent): Promise<string> {
+        const file_path = path.join(file.parentPath, file.name);
+
+        let fstat = await fs.promises.stat(file_path);
+        return fstat.birthtime.getFullYear().toString();
+    }
+}
+
+
+/**
+ * FileSegregator is used to segregate a files with a grouper strategy
+ */
+export class FileSegregator {
+
+    files: fs.Dirent[];
+
+    constructor(files: fs.Dirent[]) {
+        this.files = files;
+
+    }
+
+    async segregateFiles(strategy: FileGrouper): Promise<{ [key: string]: fs.Dirent[] }> {
+        let groupedFiles: { [key: string]: fs.Dirent[] } = {};
+
+        // getting all the keys parallely(or actually asynchronously) with Promises.all
+        let keys = await Promise.all(this.files.map((f) => strategy.getKey(f)))
+
+        this.files.forEach((f, i) => {
+            let key = keys[i];
+            if (!groupedFiles[key]) {
+                groupedFiles[key] = [];
+            }
+            groupedFiles[key].push(f);
+        });
+
+        return groupedFiles
+    }
 }

@@ -9,7 +9,7 @@ import { MediaFilesHandler } from "./lib/process_folder";
  * and loads the index.html file
  */
 class PhotoOrganizer {
-    private window!: BrowserWindow;
+    window!: BrowserWindow;
     logger!: ChannelLogger;
     private readonly logger_channel: string;
 
@@ -65,7 +65,9 @@ class StartPhotoOrganizer {
 
             console.log("app is ready so creating window");
             this.photoOrganizer.init();
-            const mediaFilesHandler = new MediaFilesHandler(this.photoOrganizer.logger);
+            const mediaFilesHandler = new MediaFilesHandler(
+                this.photoOrganizer.logger, this.photoOrganizer.window
+            );
             ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen);
         })
     }

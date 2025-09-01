@@ -2,7 +2,9 @@
 interface ElectronAPI {
     selectFolder: () => Promise<string | null>;
     // function exposed from the server to send log message from server to frontend
-    handleLogMessage: (callback: (msg: {message: string, level: string}) => void ) => void;
+    handleLogMessage: (callback: (msg: { message: string, level: string }) => void) => void;
+    // show proposal 
+    showProposal: (callback: (proposal: string) => void) => void;
 }
 
 declare global {
@@ -13,6 +15,8 @@ declare global {
 
 const selectFolderBtn = document.getElementById('select-folder-button');
 const logsDiv = document.getElementById('photo-organizer-logs');
+const proposalDiv = document.getElementById('photo-organizer-proposal');
+
 
 // It's best practice to ensure the elements exist before adding listeners.
 // This also satisfies TypeScript's null-check.
@@ -39,5 +43,21 @@ if (logsDiv) {
     })
 }
 
+
+
+if (proposalDiv) {
+
+    window.electronAPI.showProposal((proposalJSON) => {
+        console.log(`inside the callback function now got message: ${proposalJSON}`);
+        const proposal = JSON.parse(proposalJSON);
+        let html = "<ul>";
+        for (const year in proposal) {
+            html += `<li><b>${year}</b>: ${proposal[year].join(', ')}</li>`;
+        }
+        html += "</ul>";
+        proposalDiv.innerHTML += `Proposal:<br/>${html}`;
+    });
+}
+
 // This makes the file a module and fixes the "declare global" error.
-export {};
+export { };

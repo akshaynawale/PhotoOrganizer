@@ -1,4 +1,5 @@
 name: CI
+
 on: [push, pull_request]
 
 jobs:
@@ -11,3 +12,11 @@ jobs:
           node-version: 22.18.0
       - run: npm install
       - run: npm run test -- --coverage
+
+      # Upload coverage to Codecov so we can see thme in badge
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          fail_ci_if_error: true

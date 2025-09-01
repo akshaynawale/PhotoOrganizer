@@ -6,9 +6,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     selectFolder: () => ipcRenderer.invoke('dialog:openDirectory'),
     // handleLogMessage just receives the message onthe ipcRenderer on the 
     // send-to-frontend-channel and calls the callback function
-    handleLogMessage: (callback: (msg: {message: string, level: string}) => void ) => {
+    handleLogMessage: (callback: (msg: { message: string, level: string }) => void) => {
         ipcRenderer.on(
             'send-to-frontend-channel', (_event, msg) => {
+                callback(msg);
+            }
+        );
+    },
+    showProposal: (callback: (proposal: string) => void) => {
+        ipcRenderer.on(
+            'proposal-channel', (_event, msg) => {
                 callback(msg);
             }
         );

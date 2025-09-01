@@ -7,7 +7,7 @@ jest.mock('electron', () => ({
 }));
 
 import { MediaFilesHandler, ByYearGrouper, FileSegregator } from '../lib/process_folder';
-import { dialog } from 'electron';
+import { dialog, BrowserWindow } from 'electron';
 import * as fs from 'fs';
 import { ChannelLogger } from '../lib/channel_logger';
 
@@ -20,6 +20,11 @@ describe('handleFolderOpen', () => {
         info: jest.fn(),
         debug: jest.fn(),
     } as unknown as ChannelLogger;
+    const mockBrowserWin = {
+        webContents: {
+            send: jest.fn()
+        }
+    } as unknown as BrowserWindow;
 
 
     it('should return null when the user cancels the dialog', async () => {
@@ -30,9 +35,10 @@ describe('handleFolderOpen', () => {
             filePaths: [],
         });
 
+
         // Act
 
-        const mediaFilesHandler = new MediaFilesHandler(mockLogger);
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
         // Act: Call the function we are testing.
         const readdirSpy = jest.spyOn(fs.promises, "readdir").mockResolvedValue([] as any)
         const result = await mediaFilesHandler.handleFolderOpen();
@@ -59,7 +65,7 @@ describe('handleFolderOpen', () => {
         // mockedFs.readdir.mockResolvedValue(fakeFiles as any);
         // Act
 
-        const mediaFilesHandler = new MediaFilesHandler(mockLogger);
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
         const readdirSpy = jest.spyOn(fs.promises, "readdir").mockResolvedValue(fakeFiles as any)
 
 
@@ -78,12 +84,17 @@ describe('testing processFolderFiles', () => {
     const mockLogger = {
         info: jest.fn(),
         debug: jest
-    };
+    } as unknown as ChannelLogger;
+    const mockBrowserWin = {
+        webContents: {
+            send: jest.fn()
+        }
+    } as unknown as BrowserWindow;
 
     it('with no images and videos', () => {
         let files: fs.Dirent[] = [];
 
-        const mediaFilesHandler = new MediaFilesHandler(mockLogger as unknown as ChannelLogger);
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
         mediaFilesHandler.processFolderFiles(files);
         expect(mockLogger.info).toHaveBeenCalledTimes(4);
         expect(mockLogger.info).toHaveBeenCalledWith("total images: 0");
@@ -92,20 +103,43 @@ describe('testing processFolderFiles', () => {
         expect(mockLogger.info).toHaveBeenCalledWith("image files: ");
     });
 
+
     it('with some images and videos', () => {
 
-
+        // ARRANGE
         let filenames: string[] = ["image1.jpg", "image2.png", "vid.mp4", "document.txt"];
-        let input = filenames.map(filename => ({ name: filename, isFile: () => true }));
+        let input = filenames.map(filename => (
+            {
+                name: filename,
+                isFile: () => true,
+                parentPath: "/fake/path/"
+            })) as unknown as fs.Dirent[];
+
+        const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
+
+        let birth_dates: { [key: string]: Date } = {
+            "/fake/path/image1.jpg": new Date('2023-01-01'),
+            "/fake/path/image2.png": new Date('2024-01-01'),
+            "/fake/path/vid.mp4": new Date('2024-12-03')
+        };
+        const statMock = jest.spyOn(fs.promises, 'stat').mockImplementation(
+            async (filePath: fs.PathLike): Promise<fs.Stats> => {
+                return {
+                    ctime: birth_dates[filePath.toString()]
+                } as any as fs.Stats;
+            }
+        );
 
 
-        const mediaFilesHandler = new MediaFilesHandler(mockLogger as unknown as ChannelLogger);
-        mediaFilesHandler.processFolderFiles(input as unknown as fs.Dirent[]);
+        // ACT
+        mediaFilesHandler.processFolderFiles(input);
+
+        // ASSERT
         expect(mockLogger.info).toHaveBeenCalledTimes(4);
         expect(mockLogger.info).toHaveBeenCalledWith("total images: 2");
         expect(mockLogger.info).toHaveBeenCalledWith("total videos: 1");
         expect(mockLogger.info).toHaveBeenCalledWith("video files: vid.mp4");
-        expect(mockLogger.info).toHaveBeenCalledWith("image files: image1.jpg,image2.png");
+        expect(mockLogger.info).toHaveBeenCalledWith("image files: image1.jpg, image2.png");
     });
 
 })
@@ -127,7 +161,7 @@ describe('testing ByYearGrouper', () => {
 
         // Mock statSync
         jest.spyOn(fs.promises, 'stat').mockReturnValue({
-            birthtime: birthdate
+            ctime: birthdate
         } as any);
 
 
@@ -176,7 +210,7 @@ describe('testing FileSegregator', () => {
 
         const statMock = jest.spyOn(fs.promises, 'stat').mockImplementation(async (filePath: fs.PathLike): Promise<fs.Stats> => {
             return {
-                birthtime: birth_dates[filePath.toString()]
+                ctime: birth_dates[filePath.toString()]
             } as any as fs.Stats;
         });
 

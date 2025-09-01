@@ -12,4 +12,11 @@ module.exports = {
       tsconfig: 'tsconfig.main.json',  // make sure ts-jest reads your config
     },
   },
+  testMatch: [
+    "__tests__/**/*.(spec|test).ts",
+    "**/?(*.)+(spec|test).ts"
+  ],
+  modulePathIgnorePatterns: [
+    "/dist/",
+  ],
 };

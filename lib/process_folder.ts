@@ -2,18 +2,20 @@ import { dialog } from "electron";
 import * as fs from 'fs';
 import path from 'path';
 import { ChannelLogger } from "./channel_logger";
-
+import { BrowserWindow } from "electron";
+import { group } from "console";
 
 export class MediaFilesHandler {
     private imageExtensions: Set<string>;
     private videoExtensions: Set<string>;
     private logger: ChannelLogger;
+    private window: BrowserWindow;
 
-
-    constructor(channel_logger: ChannelLogger) {
+    constructor(channel_logger: ChannelLogger, window: BrowserWindow) {
         this.imageExtensions = new Set([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff"]);
         this.videoExtensions = new Set([".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"]);
         this.logger = channel_logger;
+        this.window = window
     }
 
     isImage(fileName: string): boolean {
@@ -25,22 +27,30 @@ export class MediaFilesHandler {
     }
 
     processFolderFiles(files: fs.Dirent[]) {
-        const images: string[] = [];
-        const videos: string[] = [];
+        const images: fs.Dirent[] = [];
+        const videos: fs.Dirent[] = [];
 
         for (const file of files) {
             if (file.isFile()) {
                 if (this.isImage(file.name)) {
-                    images.push(file.name);
+                    images.push(file);
                 } else if (this.isVideo(file.name)) {
-                    videos.push(file.name);
+                    videos.push(file);
                 }
             }
         }
         this.logger.info("total images: " + images.length);
         this.logger.info("total videos: " + videos.length);
-        this.logger.info("video files: " + videos);
-        this.logger.info("image files: " + images);
+        this.logger.info("video files: " + videos.map(f => f.name).join(", "));
+        this.logger.info("image files: " + images.map(f => f.name).join(", "));
+        let groupedImages = new FileSegregator(images).segregateFiles(new ByYearGrouper());
+        groupedImages.then((images) => {
+            this.window.webContents.send('proposal-channel', new GroupedFiles(images).serialize());
+        });
+        let groupedVideos = new FileSegregator(videos).segregateFiles(new ByYearGrouper());
+        groupedVideos.then((videos) => {
+            this.window.webContents.send('proposal-channel', new GroupedFiles(videos).serialize());
+        });
     }
 
     /**
@@ -93,10 +103,26 @@ export class ByYearGrouper {
         const file_path = path.join(file.parentPath, file.name);
 
         let fstat = await fs.promises.stat(file_path);
-        return fstat.birthtime.getFullYear().toString();
+        return fstat.ctime.getFullYear().toString();
     }
 }
 
+export class GroupedFiles {
+    private groupedFiles: { [key: string]: fs.Dirent[] };
+
+    constructor(groupedFiles: { [key: string]: fs.Dirent[] }) {
+        this.groupedFiles = groupedFiles;
+    }
+
+    serialize(): string {
+        let to_serialize: { [key: string]: string[] } = {};
+
+        for (let k in this.groupedFiles) {
+            to_serialize[k] = this.groupedFiles[k].map(f => f.name);
+        };
+        return JSON.stringify(to_serialize);
+    };
+}
 
 /**
  * FileSegregator is used to segregate a files with a grouper strategy

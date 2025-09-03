@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import path from 'path';
 import { ChannelLogger } from "./channel_logger";
 import { BrowserWindow } from "electron";
-import { group } from "console";
+import { ByYearGrouper, FileSegregator } from "./file_segregator";
+
 
 export class MediaFilesHandler {
     private imageExtensions: Set<string>;
@@ -43,13 +44,12 @@ export class MediaFilesHandler {
         this.logger.info("total videos: " + videos.length);
         this.logger.info("video files: " + videos.map(f => f.name).join(", "));
         this.logger.info("image files: " + images.map(f => f.name).join(", "));
-        let groupedImages = new FileSegregator(images).segregateFiles(new ByYearGrouper());
-        groupedImages.then((images) => {
-            this.window.webContents.send('proposal-channel', new GroupedFiles(images).serialize());
-        });
-        let groupedVideos = new FileSegregator(videos).segregateFiles(new ByYearGrouper());
-        groupedVideos.then((videos) => {
-            this.window.webContents.send('proposal-channel', new GroupedFiles(videos).serialize());
+
+
+        let groupedFiles = new FileSegregator(videos, images).segregateFiles(new ByYearGrouper());
+        groupedFiles.then((files) => {
+            console.log("serialized files: " + files.serialize());
+            this.window.webContents.send('proposal-channel', files.serialize());
         });
     }
 
@@ -84,72 +84,3 @@ export class MediaFilesHandler {
 
 }
 
-
-/**
- * FileGrouper Interface to get Group key
- */
-interface FileGrouper {
-
-    getKey(file: fs.Dirent): Promise<string>;
-
-}
-
-/**
- * ByYearGrouper is used to group files with create date year
- */
-export class ByYearGrouper {
-
-    async getKey(file: fs.Dirent): Promise<string> {
-        const file_path = path.join(file.parentPath, file.name);
-
-        let fstat = await fs.promises.stat(file_path);
-        return fstat.ctime.getFullYear().toString();
-    }
-}
-
-export class GroupedFiles {
-    private groupedFiles: { [key: string]: fs.Dirent[] };
-
-    constructor(groupedFiles: { [key: string]: fs.Dirent[] }) {
-        this.groupedFiles = groupedFiles;
-    }
-
-    serialize(): string {
-        let to_serialize: { [key: string]: string[] } = {};
-
-        for (let k in this.groupedFiles) {
-            to_serialize[k] = this.groupedFiles[k].map(f => f.name);
-        };
-        return JSON.stringify(to_serialize);
-    };
-}
-
-/**
- * FileSegregator is used to segregate a files with a grouper strategy
- */
-export class FileSegregator {
-
-    files: fs.Dirent[];
-
-    constructor(files: fs.Dirent[]) {
-        this.files = files;
-
-    }
-
-    async segregateFiles(strategy: FileGrouper): Promise<{ [key: string]: fs.Dirent[] }> {
-        let groupedFiles: { [key: string]: fs.Dirent[] } = {};
-
-        // getting all the keys parallely(or actually asynchronously) with Promises.all
-        let keys = await Promise.all(this.files.map((f) => strategy.getKey(f)))
-
-        this.files.forEach((f, i) => {
-            let key = keys[i];
-            if (!groupedFiles[key]) {
-                groupedFiles[key] = [];
-            }
-            groupedFiles[key].push(f);
-        });
-
-        return groupedFiles
-    }
-}

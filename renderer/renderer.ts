@@ -51,11 +51,14 @@ if (proposalDiv) {
         console.log(`inside the callback function now got message: ${proposalJSON}`);
         const proposal = JSON.parse(proposalJSON);
         let html = "<ul>";
-        for (const year in proposal) {
-            html += `<li><b>${year}</b>: ${proposal[year].join(', ')}</li>`;
+        for (const year in proposal["videos"]) {
+            html += `<li><b>${year}</b>: ${proposal["videos"][year].join(', ')}</li>`;
+        }
+        for (const year in proposal["images"]) {
+            html += `<li><b>${year}</b>: ${proposal["images"][year].join(', ')}</li>`;
         }
         html += "</ul>";
-        proposalDiv.innerHTML += `Proposal:<br/>${html}`;
+        proposalDiv.innerHTML = `Proposal:<br/>${html}`;
     });
 }
 

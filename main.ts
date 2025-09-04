@@ -4,24 +4,23 @@ import { ChannelLogger } from "./lib/channel_logger";
 import { MediaFilesHandler } from "./lib/process_folder";
 
 
+
 /**
- * PhotoOrganizer is the main class which is responsible to create the browser window 
- * and loads the index.html file
+ * PhotoOrganizer is responsible for starting the app
  */
 class PhotoOrganizer {
-    window!: BrowserWindow;
-    logger!: ChannelLogger;
+    app: Electron.App;
     private readonly logger_channel: string;
 
-    constructor() {
+    constructor(app: Electron.App) {
+        this.app = app;
         this.logger_channel = "send-to-frontend-channel";
     }
 
     /**
-     * init method is called to initialize the PhotoOrganizer by creating a BrowserWindow 
-     * instance  
+     * creates main window for the application and returns it
      */
-    init(): void {
+    create_browser_window(): BrowserWindow {
         let window = new BrowserWindow({
             width: 800,
             height: 600,
@@ -30,33 +29,22 @@ class PhotoOrganizer {
                 preload: path.join(__dirname, "preload.js")
             }
         });
-        this.window = window;
         // initialize the channel logger
-        this.logger = new ChannelLogger(window, this.logger_channel)
-
-        this.window.loadFile("index.html");
-        //following log message is just for testing and we need to remove this afterwards
-        this.window.webContents.on('did-finish-load', () => {
-            this.logger.info("this is a message send on a channel")
-        })
-    }
-}
-
-
-/**
- * StartPhotoOrganizer is responsible for starting the app
- */
-class StartPhotoOrganizer {
-    app: Electron.App;
-    photoOrganizer: PhotoOrganizer;
-
-
-
-    constructor(app: Electron.App) {
-        this.photoOrganizer = new PhotoOrganizer();
-        this.app = app;
+        window.loadFile("renderer/index.html");
+        return window
     }
 
+    /** 
+     * @param window Broswer Window to create the channel logger for
+     * @returns ChannelLogger instance for the broswer window 
+     */
+    create_logger(window: BrowserWindow): ChannelLogger {
+        return new ChannelLogger(window, this.logger_channel);
+    }
+
+    /**
+     * start method creates the window, logger and starts the app
+     */
     start(): void {
         this.app.disableHardwareAcceleration();
 
@@ -64,10 +52,10 @@ class StartPhotoOrganizer {
             // Set up a Handler for the 'dialog:openDirectory' message
 
             console.log("app is ready so creating window");
-            this.photoOrganizer.init();
-            const mediaFilesHandler = new MediaFilesHandler(
-                this.photoOrganizer.logger, this.photoOrganizer.window
-            );
+            let window = this.create_browser_window();
+            let logger = this.create_logger(window);
+
+            const mediaFilesHandler = new MediaFilesHandler(logger, window);
             ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen);
         })
     }
@@ -75,5 +63,5 @@ class StartPhotoOrganizer {
 }
 
 
-let photoApp = new StartPhotoOrganizer(app);
+let photoApp = new PhotoOrganizer(app);
 photoApp.start();

@@ -1,0 +1,49 @@
+/*https://coolors.co/fa8334-fde8e9-bc9ec1-8b9474-6cae75
+*/
+
+body {
+    background-color: #FDE8E9;
+}
+
+#select-folder-button {
+    font-size: medium;
+    border-radius: 2px;
+    margin: 5px;
+    padding: 5px;
+    border-style: hidden;
+    background-color: #fa8334;
+    color: white; 
+}
+
+#photo-organizer-title {
+    color: #fa8334;
+    font-size: 30px;
+    text-align: center; 
+}
+
+#photo-organizer-proposal-container {
+    background-color: white;
+    border-style: solid;
+    border-color: whitesmoke;
+    margin: 5px;
+    height: 20pc;
+    border-radius: 5px;
+    color: #2A2B2B;
+    overflow-y: auto;
+}
+
+#photo-organizer-logs-container {
+    background-color: white;
+    border-style: solid;
+    border-color: whitesmoke;
+    margin: 5px;
+    height: 10pc;
+    border-radius: 5px;
+    color: #2A2B2B;
+    overflow-y: auto;
+
+}
+
+h3 {
+    font-size: medium;
+}

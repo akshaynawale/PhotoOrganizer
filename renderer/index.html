@@ -11,6 +11,7 @@
       http-equiv="X-Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
+    <link rel="stylesheet" href="index.css">
     <title>Photo Organizer</title>
     <!-- This loads your renderer script securely and efficiently -->
     <!-- <script src="./dist/renderer.js" defer></script> -->
@@ -18,11 +19,16 @@
   <body>
     <h1 id="photo-organizer-title">Photo Organizer</h1>
     <button id="select-folder-button"> Select Folder</button>
-    <h3>Photo Organizer logs</h3>
-    <div id="photo-organizer-logs"></div>
-    <h3>Photo Organizer Proposal</h3>
-    <div id="photo-organizer-proposal"> </div> 
-    <script type="module" src="./dist/renderer/renderer.js"></script>
+    <div id="photo-organizer-proposal-container">
+      <h3>Photo Organizer Proposal</h3>
+      <div id="photo-organizer-proposal"> </div> 
+    </div>
+    <div id="photo-organizer-logs-container">
+      <h3>Photo Organizer logs</h3>
+      <div id="photo-organizer-logs"></div>
+    </div>
+
+    <script type="module" src="../dist/renderer/renderer.js"></script>
   </body>
 
 </html>

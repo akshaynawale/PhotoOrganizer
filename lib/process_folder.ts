@@ -58,17 +58,17 @@ export class MediaFilesHandler {
      * this function runs on the server
      */
     handleFolderOpen = async () => {
-        console.log("inside handle Open funciton");
+        console.log("inside handle Open function");
         const { canceled, filePaths } = await dialog.showOpenDialog({
             properties: ['openDirectory']
         });
 
         if (canceled || filePaths.length === 0) {
-            console.log('User cancelled folder selection');
+            this.logger.info("User cancelled folder selection");
             return null;
         } else {
             const folderPath = filePaths[0];
-            console.log(`Selected folder: ${folderPath}`);
+            this.logger.info("User selected folder: " + folderPath);
 
             try {
                 const files = await fs.promises.readdir(folderPath, { withFileTypes: true });

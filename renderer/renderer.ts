@@ -5,6 +5,8 @@ interface ElectronAPI {
     handleLogMessage: (callback: (msg: { message: string, level: string }) => void) => void;
     // show proposal 
     showProposal: (callback: (proposal: string) => void) => void;
+    // apply proposal 
+    applyProposal: (proposal: string) => void;
 }
 
 declare global {
@@ -14,6 +16,7 @@ declare global {
 }
 
 const selectFolderBtn = document.getElementById('select-folder-button');
+const applyProposalBtn = document.getElementById('apply-proposal');
 const logsDiv = document.getElementById('photo-organizer-logs');
 const proposalDiv = document.getElementById('photo-organizer-proposal');
 
@@ -34,10 +37,17 @@ if (logsDiv) {
     console.log("found logsDiv so adding a callback to the handleLogMessage function")
     window.electronAPI.handleLogMessage((msg) => {
         console.log('inside the callback function now got message: ($msg)');
-        logsDiv.innerHTML += `from server: ${msg.message}<br/>`;
+        logsDiv.innerHTML += msg.message;
     })
 }
 
+if (applyProposalBtn && logsDiv) {
+    console.log("found apply proposal button adding listener");
+    applyProposalBtn.addEventListener('click', async () => {
+        logsDiv.innerHTML += "Applying proposal ...<br>";
+        window.electronAPI.applyProposal("proposal");
+    })
+}
 
 
 if (proposalDiv) {
@@ -54,8 +64,15 @@ if (proposalDiv) {
         }
         html += "</ul>";
         proposalDiv.innerHTML = `Proposal:<br/>${html}`;
+
+        // make the apply proposal button unhidden
+        if (applyProposalBtn) {
+            applyProposalBtn.hidden = false;
+        }
+
     });
 }
+
 
 // This makes the file a module and fixes the "declare global" error.
 export { };

@@ -20,7 +20,7 @@ class PhotoOrganizer {
     /**
      * creates main window for the application and returns it
      */
-    create_browser_window(): BrowserWindow {
+    createBrowserWindow(): BrowserWindow {
         let window = new BrowserWindow({
             width: 800,
             height: 600,
@@ -38,7 +38,7 @@ class PhotoOrganizer {
      * @param window Broswer Window to create the channel logger for
      * @returns ChannelLogger instance for the broswer window 
      */
-    create_logger(window: BrowserWindow): ChannelLogger {
+    createLogger(window: BrowserWindow): ChannelLogger {
         return new ChannelLogger(window, this.logger_channel);
     }
 
@@ -52,11 +52,14 @@ class PhotoOrganizer {
             // Set up a Handler for the 'dialog:openDirectory' message
 
             console.log("app is ready so creating window");
-            let window = this.create_browser_window();
-            let logger = this.create_logger(window);
+            let window = this.createBrowserWindow();
+            let logger = this.createLogger(window);
 
             const mediaFilesHandler = new MediaFilesHandler(logger, window);
             ipcMain.handle('dialog:openDirectory', mediaFilesHandler.handleFolderOpen);
+            ipcMain.on("apply-proposal", (event, proposal) => {
+                mediaFilesHandler.applyProposal(proposal);
+            })
         })
     }
 

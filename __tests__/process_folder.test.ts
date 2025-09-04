@@ -10,6 +10,9 @@ import { MediaFilesHandler } from '../lib/process_folder';
 import { dialog, BrowserWindow } from 'electron';
 import * as fs from 'fs';
 import { ChannelLogger } from '../lib/channel_logger';
+import { GroupedFiles } from '../lib/file_segregator';
+import { FileMover } from '../lib/file_mover';
+jest.mock("../lib/file_mover")
 
 // To use the mocked versions in tests, we cast them to Jest's mock types.
 const mockedDialog = dialog as jest.Mocked<typeof dialog>;
@@ -83,7 +86,7 @@ describe('testing processFolderFiles', () => {
 
     const mockLogger = {
         info: jest.fn(),
-        debug: jest
+        debug: jest.fn(),
     } as unknown as ChannelLogger;
     const mockBrowserWin = {
         webContents: {
@@ -96,11 +99,13 @@ describe('testing processFolderFiles', () => {
 
         const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
         mediaFilesHandler.processFolderFiles(files);
-        expect(mockLogger.info).toHaveBeenCalledTimes(4);
-        expect(mockLogger.info).toHaveBeenCalledWith("total images: 0");
-        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 0");
-        expect(mockLogger.info).toHaveBeenCalledWith("video files: ");
-        expect(mockLogger.info).toHaveBeenCalledWith("image files: ");
+        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            "<div>Total Count: images: 0, videos: 0<br> " +
+            "Video files: <br> Image files: </div>"
+        );
+
     });
 
 
@@ -125,22 +130,96 @@ describe('testing processFolderFiles', () => {
         const statMock = jest.spyOn(fs.promises, 'stat').mockImplementation(
             async (filePath: fs.PathLike): Promise<fs.Stats> => {
                 return {
-                    ctime: birth_dates[filePath.toString()]
+                    mtime: birth_dates[filePath.toString()]
                 } as any as fs.Stats;
             }
         );
-
 
         // ACT
         mediaFilesHandler.processFolderFiles(input);
 
         // ASSERT
-        expect(mockLogger.info).toHaveBeenCalledTimes(4);
-        expect(mockLogger.info).toHaveBeenCalledWith("total images: 2");
-        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 1");
-        expect(mockLogger.info).toHaveBeenCalledWith("video files: vid.mp4");
-        expect(mockLogger.info).toHaveBeenCalledWith("image files: image1.jpg, image2.png");
+        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            "<div>Total Count: images: 2, videos: 1<br> " +
+            "Video files: vid.mp4<br> Image files: image1.jpg, image2.png</div>"
+        );
+
     });
 
 })
 
+
+
+describe('testing applyProposal', () => {
+
+    const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+    } as unknown as ChannelLogger;
+    const mockBrowserWin = {
+        webContents: {
+            send: jest.fn()
+        }
+    } as unknown as BrowserWindow;
+
+
+    it("testing apply proposal without grouped files to apply", () => {
+
+        let media_handler = new MediaFilesHandler(mockLogger, mockBrowserWin);
+
+        media_handler.applyProposal("test_proposal");
+
+        expect(mockLogger.info).toHaveBeenCalledTimes(2);
+        expect(mockLogger.info).toHaveBeenCalledWith("applying proposal in backend : test_proposal<br>");
+        expect(mockLogger.info).toHaveBeenCalledWith("nothing to apply grouped files: undefined folder path: null");
+    })
+
+
+    it("testing apply proposal with grouped files to apply", () => {
+
+        let media_handler = new MediaFilesHandler(mockLogger, mockBrowserWin);
+        let test_grouped_files = new GroupedFiles();
+        media_handler.setGroupedFiles(test_grouped_files);
+        media_handler.setFolderPath("/fake/path");
+        const m_moveFiles = jest.spyOn(FileMover.prototype, "moveFiles").mockResolvedValue(undefined);
+
+        media_handler.applyProposal("test_proposal");
+
+        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+        expect(mockLogger.info).toHaveBeenCalledWith("applying proposal in backend : test_proposal<br>");
+        expect(FileMover).toHaveBeenCalledTimes(1);
+        expect(FileMover).toHaveBeenCalledWith(mockLogger);
+        expect(m_moveFiles).toHaveBeenCalledTimes(1);
+        expect(m_moveFiles).toHaveBeenCalledWith(test_grouped_files, "/fake/path");
+        expect(media_handler.getFolderPath()).toBeNull();
+        expect(media_handler.getGroupedFiles()).toBeNull();
+
+    })
+
+    it("testing apply proposal with grouped files but moveFiles fails", () => {
+
+        let media_handler = new MediaFilesHandler(mockLogger, mockBrowserWin);
+        let test_grouped_files = new GroupedFiles();
+        media_handler.setGroupedFiles(test_grouped_files);
+        media_handler.setFolderPath("/fake/path");
+        const m_moveFiles = jest.spyOn(FileMover.prototype, "moveFiles").mockImplementation(
+            () => {
+                throw new Error("test error");
+            }
+        );
+
+        media_handler.applyProposal("test_proposal");
+
+        expect(mockLogger.info).toHaveBeenCalledTimes(2);
+        expect(mockLogger.info).toHaveBeenCalledWith("applying proposal in backend : test_proposal<br>");
+        expect(mockLogger.info).toHaveBeenCalledWith("Error applying proposal: test_proposal with error: Error: test error<br>");
+        expect(FileMover).toHaveBeenCalledTimes(1);
+        expect(FileMover).toHaveBeenCalledWith(mockLogger);
+        expect(m_moveFiles).toHaveBeenCalledTimes(1);
+        expect(m_moveFiles).toHaveBeenCalledWith(test_grouped_files, "/fake/path");
+        expect(media_handler.getFolderPath()).toBeNull();
+        expect(media_handler.getGroupedFiles()).toBeNull();
+    })
+
+})

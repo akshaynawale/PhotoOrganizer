@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import path from 'path';
 import { ChannelLogger } from "./channel_logger";
 import { BrowserWindow } from "electron";
-import { ByYearGrouper, FileSegregator } from "./file_segregator";
+import { ByYearGrouper, FileSegregator, GroupedFiles } from "./file_segregator";
+import { FileMover } from "./file_mover";
 
 
 export class MediaFilesHandler {
@@ -11,12 +12,17 @@ export class MediaFilesHandler {
     private videoExtensions: Set<string>;
     private logger: ChannelLogger;
     private window: BrowserWindow;
+    private folder_path: string | null;
+    private grouped_files: GroupedFiles | null;
+
 
     constructor(channel_logger: ChannelLogger, window: BrowserWindow) {
         this.imageExtensions = new Set([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff"]);
         this.videoExtensions = new Set([".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"]);
         this.logger = channel_logger;
         this.window = window
+        this.grouped_files = null;
+        this.folder_path = null
     }
 
     isImage(fileName: string): boolean {
@@ -26,6 +32,21 @@ export class MediaFilesHandler {
     isVideo(fileName: string): boolean {
         return this.videoExtensions.has(path.extname(fileName).toLowerCase());
     }
+
+    setGroupedFiles(groupedFiles: GroupedFiles): void {
+        this.grouped_files = groupedFiles;
+    }
+    getGroupedFiles(): GroupedFiles | null {
+        return this.grouped_files;
+    }
+
+    setFolderPath(folderPath: string): void {
+        this.folder_path = folderPath;
+    }
+    getFolderPath(): string | null {
+        return this.folder_path;
+    }
+
 
     processFolderFiles(files: fs.Dirent[]) {
         const images: fs.Dirent[] = [];
@@ -40,14 +61,15 @@ export class MediaFilesHandler {
                 }
             }
         }
-        this.logger.info("total images: " + images.length);
-        this.logger.info("total videos: " + videos.length);
-        this.logger.info("video files: " + videos.map(f => f.name).join(", "));
-        this.logger.info("image files: " + images.map(f => f.name).join(", "));
-
+        this.logger.info(
+            "<div>Total Count: images: " + images.length + ", videos: " + videos.length +
+            "<br> Video files: " + videos.map(f => f.name).join(", ") +
+            "<br> Image files: " + images.map(f => f.name).join(", ") + "</div>"
+        )
 
         let groupedFiles = new FileSegregator(videos, images).segregateFiles(new ByYearGrouper());
         groupedFiles.then((files) => {
+            this.setGroupedFiles(files);
             console.log("serialized files: " + files.serialize());
             this.window.webContents.send('proposal-channel', files.serialize());
         });
@@ -74,6 +96,7 @@ export class MediaFilesHandler {
                 const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
                 console.log("Files in the folder:");
                 this.processFolderFiles(files);
+                this.setFolderPath(folderPath);
             } catch (err) {
                 console.error('Error reading folder:', err);
             }
@@ -81,6 +104,27 @@ export class MediaFilesHandler {
         }
     }
 
+    /**
+     * applyProposal 
+     */
+    applyProposal(proposal: string): void {
+        this.logger.info("applying proposal in backend : " + proposal + "<br>");
+
+        if (this.grouped_files && this.folder_path) {
+            try {
+                let mover = new FileMover(this.logger)
+                mover.moveFiles(this.grouped_files, this.folder_path)
+
+            } catch (err) {
+                this.logger.info("Error applying proposal: " + proposal + " with error: " + err + "<br>");
+            }
+            this.grouped_files = null
+            this.folder_path = null
+        } else {
+            this.logger.info("nothing to apply grouped files: " + this.grouped_files?.serialize() + " folder path: " + this.folder_path);
+        }
+
+    }
 
 }
 

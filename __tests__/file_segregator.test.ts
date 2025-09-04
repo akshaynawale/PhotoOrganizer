@@ -16,7 +16,7 @@ describe('testing ByYearGrouper', () => {
 
         // Mock statSync
         jest.spyOn(fs.promises, 'stat').mockResolvedValue({
-            ctime: birthdate
+            mtime: birthdate
         } as any);
 
 
@@ -70,7 +70,7 @@ describe('testing FileSegregator', () => {
 
         const statMock = jest.spyOn(fs.promises, 'stat').mockImplementation(async (filePath: fs.PathLike): Promise<fs.Stats> => {
             return {
-                ctime: birth_dates[filePath.toString()]
+                mtime: birth_dates[filePath.toString()]
             } as any as fs.Stats;
         });
 

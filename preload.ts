@@ -19,5 +19,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
                 callback(msg);
             }
         );
-    }
+    },
+    applyProposal: (proposal: string) => ipcRenderer.send("apply-proposal", proposal),
 });

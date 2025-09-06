@@ -18,7 +18,7 @@ export class ByYearGrouper {
         const file_path = path.join(file.parentPath, file.name);
 
         let fstat = await fs.promises.stat(file_path);
-        return fstat.ctime.getFullYear().toString();
+        return fstat.mtime.getFullYear().toString();
     }
 }
 

@@ -10,6 +10,7 @@ import { MediaFilesHandler } from '../lib/process_folder';
 import { dialog, BrowserWindow } from 'electron';
 import * as fs from 'fs';
 import { ChannelLogger } from '../lib/channel_logger';
+import { ByYearGrouper, FileSegregator, GroupedFiles } from '../lib/file_segregator';
 
 // To use the mocked versions in tests, we cast them to Jest's mock types.
 const mockedDialog = dialog as jest.Mocked<typeof dialog>;
@@ -83,7 +84,7 @@ describe('testing processFolderFiles', () => {
 
     const mockLogger = {
         info: jest.fn(),
-        debug: jest
+        debug: jest.fn(),
     } as unknown as ChannelLogger;
     const mockBrowserWin = {
         webContents: {
@@ -96,11 +97,13 @@ describe('testing processFolderFiles', () => {
 
         const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
         mediaFilesHandler.processFolderFiles(files);
-        expect(mockLogger.info).toHaveBeenCalledTimes(4);
-        expect(mockLogger.info).toHaveBeenCalledWith("total images: 0");
-        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 0");
-        expect(mockLogger.info).toHaveBeenCalledWith("video files: ");
-        expect(mockLogger.info).toHaveBeenCalledWith("image files: ");
+        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            "<div>Total Count: images: 0, videos: 0</br> " +
+            "Video files: </br> Image files: </div>"
+        );
+
     });
 
 
@@ -125,21 +128,23 @@ describe('testing processFolderFiles', () => {
         const statMock = jest.spyOn(fs.promises, 'stat').mockImplementation(
             async (filePath: fs.PathLike): Promise<fs.Stats> => {
                 return {
-                    ctime: birth_dates[filePath.toString()]
+                    mtime: birth_dates[filePath.toString()]
                 } as any as fs.Stats;
             }
         );
 
+        let mocked_grouped_val = new GroupedFiles()
 
         // ACT
         mediaFilesHandler.processFolderFiles(input);
 
         // ASSERT
-        expect(mockLogger.info).toHaveBeenCalledTimes(4);
-        expect(mockLogger.info).toHaveBeenCalledWith("total images: 2");
-        expect(mockLogger.info).toHaveBeenCalledWith("total videos: 1");
-        expect(mockLogger.info).toHaveBeenCalledWith("video files: vid.mp4");
-        expect(mockLogger.info).toHaveBeenCalledWith("image files: image1.jpg, image2.png");
+        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            "<div>Total Count: images: 2, videos: 1</br> " +
+            "Video files: vid.mp4</br> Image files: image1.jpg, image2.png</div>"
+        );
+
     });
 
 })

@@ -5,7 +5,7 @@ body {
     background-color: #FDE8E9;
 }
 
-#select-folder-button {
+.photo-org-button {
     font-size: medium;
     border-radius: 2px;
     margin: 5px;

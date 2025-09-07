@@ -94,11 +94,11 @@ describe('testing processFolderFiles', () => {
         }
     } as unknown as BrowserWindow;
 
-    it('with no images and videos', () => {
+    it('with no images and videos', async () => {
         let files: fs.Dirent[] = [];
 
         const mediaFilesHandler = new MediaFilesHandler(mockLogger, mockBrowserWin);
-        mediaFilesHandler.processFolderFiles(files);
+        await mediaFilesHandler.processFolderFiles(files);
         expect(mockLogger.info).toHaveBeenCalledTimes(1);
 
         expect(mockLogger.info).toHaveBeenCalledWith(
@@ -109,7 +109,7 @@ describe('testing processFolderFiles', () => {
     });
 
 
-    it('with some images and videos', () => {
+    it('with some images and videos', async () => {
 
         // ARRANGE
         let filenames: string[] = ["image1.jpg", "image2.png", "vid.mp4", "document.txt"];
@@ -136,7 +136,7 @@ describe('testing processFolderFiles', () => {
         );
 
         // ACT
-        mediaFilesHandler.processFolderFiles(input);
+        await mediaFilesHandler.processFolderFiles(input);
 
         // ASSERT
         expect(mockLogger.info).toHaveBeenCalledTimes(1);

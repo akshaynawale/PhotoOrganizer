@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",              // IMPORTANT: preload must be CJS
+    "outDir": "dist/main",             // same output folder as main
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["preload.ts"]
+}

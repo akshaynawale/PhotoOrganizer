@@ -1,10 +1,10 @@
 import { dialog } from "electron";
 import * as fs from 'fs';
 import path from 'path';
-import { ChannelLogger } from "./channel_logger";
+import { ChannelLogger } from "./channel_logger.js";
 import { BrowserWindow } from "electron";
-import { ByYearGrouper, FileSegregator, GroupedFiles } from "./file_segregator";
-import { FileMover } from "./file_mover";
+import { ByYearGrouper, FileSegregator, GroupedFiles } from "./file_segregator.js";
+import { FileMover } from "./file_mover.js";
 
 
 export class MediaFilesHandler {
@@ -48,7 +48,7 @@ export class MediaFilesHandler {
     }
 
 
-    processFolderFiles(files: fs.Dirent[]) {
+    async processFolderFiles(files: fs.Dirent[]) {
         const images: fs.Dirent[] = [];
         const videos: fs.Dirent[] = [];
 
@@ -67,12 +67,10 @@ export class MediaFilesHandler {
             "<br> Image files: " + images.map(f => f.name).join(", ") + "</div>"
         )
 
-        let groupedFiles = new FileSegregator(videos, images).segregateFiles(new ByYearGrouper());
-        groupedFiles.then((files) => {
-            this.setGroupedFiles(files);
-            console.log("serialized files: " + files.serialize());
-            this.window.webContents.send('proposal-channel', files.serialize());
-        });
+        let files_to_propose = await new FileSegregator(videos, images).segregateFiles(new ByYearGrouper());
+        this.setGroupedFiles(files_to_propose);
+        console.log("serialized files: " + files_to_propose.serialize());
+        this.window.webContents.send('proposal-channel', files_to_propose.serialize());
     }
 
     /**
@@ -95,7 +93,7 @@ export class MediaFilesHandler {
             try {
                 const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
                 console.log("Files in the folder:");
-                this.processFolderFiles(files);
+                await this.processFolderFiles(files);
                 this.setFolderPath(folderPath);
             } catch (err) {
                 console.error('Error reading folder:', err);
@@ -127,4 +125,3 @@ export class MediaFilesHandler {
     }
 
 }
-

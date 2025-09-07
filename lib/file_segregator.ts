@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
+import { json } from 'stream/consumers';
 
 
 /**
@@ -14,9 +15,53 @@ interface FileGrouper {
  */
 export class ByYearGrouper {
 
+
+    /**
+     * 
+     * @param file_path string representing the file path 
+     * @returns 
+     */
+    async get_with_fsstat(file_path: string): Promise<string> {
+        let fstat = await fs.promises.stat(file_path);
+        return fstat.mtime.getFullYear().toString() + "-" + fstat.mtime.toLocaleString("en-US", { month: "short" });
+    }
+
+    /**
+     * 
+     * @param file_path file path of image /video for which we need to find the year and month from metadatafile
+     * @returns 
+     */
+    async get_with_metadata(file_path: string, metadata_file_path: string): Promise<string> {
+        let metadata_file_data = await fs.promises.readFile(metadata_file_path, "utf-8");
+        const metadata = JSON.parse(metadata_file_data);
+        const photo_taken_date = new Date(metadata["photoTakenTime"]["formatted"])
+        console.log("found photoTakenTime from json file : " + photo_taken_date.toDateString() + " for file: " + file_path + "")
+        return photo_taken_date.getFullYear().toString() + "-" + photo_taken_date.toLocaleString("en-US", { month: "short" });
+    }
+
     async getKey(file: fs.Dirent): Promise<string> {
         const file_path = path.join(file.parentPath, file.name);
 
+        const metadata_ext_to_try: string[] = [
+            ".supplemental-metadata.json",
+            ".suppleme.json",
+            ".suppl.json",
+            ".supplemental-met.json",
+            ".supplemen.json",
+            ".supplemental-metad.json"
+        ]
+
+        for (const ext of metadata_ext_to_try) {
+            const metadata_file_path = file_path + ext;
+            try {
+                return await this.get_with_metadata(file_path, metadata_file_path)
+            } catch (err) {
+                console.log("unable to get metadata for file: " + file.name + " error: " + err);
+            }
+
+        }
+
+        // lastly try with the file with fs stat
         let fstat = await fs.promises.stat(file_path);
         return fstat.mtime.getFullYear().toString();
     }
@@ -25,7 +70,7 @@ export class ByYearGrouper {
 /**
  * GroupedFiles contains all the grouped images and videos 
  * FileSegregator creates this class and then this class is used to 
- * create the acutal segregated files
+ * create the actual segregated files
  */
 export class GroupedFiles {
     videos: { [key: string]: fs.Dirent[] };
@@ -73,7 +118,7 @@ export class FileSegregator {
 
         let groupedFiles: GroupedFiles = new GroupedFiles();
 
-        // getting all the keys parallely(or actually asynchronously) with Promises.all
+        // getting all the keys in parallel (or actually asynchronously) with Promises.all
         let imagekeys = await Promise.all(this.images.map((f) => strategy.getKey(f)))
         let videokeys = await Promise.all(this.videos.map((f) => strategy.getKey(f)))
 

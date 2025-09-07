@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
-import { ChannelLogger } from './channel_logger';
-import { GroupedFiles } from './file_segregator';
+import { ChannelLogger } from './channel_logger.js';
+import { GroupedFiles } from './file_segregator.js';
 
 class FileMover {
 

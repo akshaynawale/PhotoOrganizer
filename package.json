@@ -1,8 +1,9 @@
 {
   "name": "photoorganizer",
   "version": "1.0.0",
-  "description": "Photo Organizer Tool which helps users to organise their photos and videos inside a folder.",
+  "description": "Photo Organizer Tool which helps users to organize their photos and videos inside a folder.",
   "main": "dist/main/main.js",
+  "type": "module",
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "tsc -p tsconfig.renderer.json",

@@ -5,8 +5,8 @@ describe('testing ByYearGrouper', () => {
 
 
     test.each([
-        [new Date('2023-01-01'), '2023'],
-        [new Date('2015-01-01'), '2015'],
+        [new Date('2023-01-01'), '2023-Jan'],
+        [new Date('2015-01-01'), '2015-Jan'],
     ])('test year %s', async (birthdate, expected_key) => {
         let f1 = {
             name: "image1.jpg",
@@ -53,11 +53,12 @@ describe('testing FileSegregator', () => {
     }
 
     let expected_result = new GroupedFiles();
-    expected_result.images["2023"] = [images[0]];
-    expected_result.images["2024"] = [images[1], images[2]];
-    expected_result.videos["2023"] = [videos[0]];
-    expected_result.videos["2024"] = [videos[1]];
-    expected_result.videos["2025"] = [videos[2]];
+    expected_result.images["2023-Jan"] = [images[0]];
+    expected_result.images["2024-Jan"] = [images[1]]
+    expected_result.images["2024-Dec"] = [images[2]];
+    expected_result.videos["2023-Jan"] = [videos[0]];
+    expected_result.videos["2024-Jan"] = [videos[1]];
+    expected_result.videos["2025-Mar"] = [videos[2]];
 
 
     test.each([

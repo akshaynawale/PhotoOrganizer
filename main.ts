@@ -1,9 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import path from "path";
-import { ChannelLogger } from "./lib/channel_logger";
-import { MediaFilesHandler } from "./lib/process_folder";
-
-
+import { ChannelLogger } from "./lib/channel_logger.js";
+import { MediaFilesHandler } from "./lib/process_folder.js";
+import path from 'path';
 
 /**
  * PhotoOrganizer is responsible for starting the app
@@ -26,7 +24,7 @@ class PhotoOrganizer {
             height: 600,
             webPreferences: {
                 // attach the preload script to the renderer process
-                preload: path.join(__dirname, "preload.js")
+                preload: path.join(import.meta.dirname, "preload.js"),
             }
         });
         // initialize the channel logger
@@ -35,8 +33,8 @@ class PhotoOrganizer {
     }
 
     /** 
-     * @param window Broswer Window to create the channel logger for
-     * @returns ChannelLogger instance for the broswer window 
+     * @param window Browser Window to create the channel logger for
+     * @returns ChannelLogger instance for the Browser window 
      */
     createLogger(window: BrowserWindow): ChannelLogger {
         return new ChannelLogger(window, this.logger_channel);

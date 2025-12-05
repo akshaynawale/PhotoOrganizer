@@ -24,7 +24,7 @@ class PhotoOrganizer {
             height: 600,
             webPreferences: {
                 // attach the preload script to the renderer process
-                preload: path.join(import.meta.dirname, "preload.js"),
+                preload: path.join(import.meta.dirname, "src/preload.js"),
             }
         });
         // initialize the channel logger

@@ -24,8 +24,8 @@ const config: Config = {
     ],
   },
   moduleNameMapper: {
-    "\.\.\/lib/(.*)\\.js$": "<rootDir>/lib/$1.ts", // to convert ../lib like js import to .ts
-    "\.\/(channel_logger|file_segregator|file_mover|process_folder)\\.js$": "<rootDir>/lib/$1.ts",
+    "\.\.\/src/lib/(.*)\\.js$": "<rootDir>/src/lib/$1.ts", // to convert ../lib like js import to .ts
+    "\.\/(channel_logger|file_segregator|file_mover|process_folder)\\.js$": "<rootDir>/src/lib/$1.ts",
     // to convert the ./<file-name>.js like import to .ts 
   },
 

@@ -22,7 +22,9 @@ export class ByYearGrouper {
      */
     async get_with_fsstat(file_path: string): Promise<string> {
         let fstat = await fs.promises.stat(file_path);
-        return fstat.mtime.getFullYear().toString() + "-" + fstat.mtime.toLocaleString("en-US", { month: "short" });
+        return fstat.mtime.getFullYear().toString() + "-" + fstat.mtime.toLocaleString(
+            "en-US", { month: "short" }
+        );
     }
 
     /**
@@ -33,9 +35,14 @@ export class ByYearGrouper {
     async get_with_metadata(file_path: string, metadata_file_path: string): Promise<string> {
         let metadata_file_data = await fs.promises.readFile(metadata_file_path, "utf-8");
         const metadata = JSON.parse(metadata_file_data);
-        const photo_taken_date = new Date(metadata["photoTakenTime"]["formatted"])
-        console.log("found photoTakenTime from json file : " + photo_taken_date.toDateString() + " for file: " + file_path + "")
-        return photo_taken_date.getFullYear().toString() + "-" + photo_taken_date.toLocaleString("en-US", { month: "short" });
+        const photo_taken_date = new Date(metadata["photoTakenTime"]["formatted"]);
+        console.log(
+            "found photoTakenTime from json file : " +
+            photo_taken_date.toDateString() + " for file: " + file_path + ""
+        );
+        return photo_taken_date.getFullYear().toString() + "-" + photo_taken_date.toLocaleString(
+            "en-US", { month: "short" }
+        );
     }
 
     async getKey(file: fs.Dirent): Promise<string> {

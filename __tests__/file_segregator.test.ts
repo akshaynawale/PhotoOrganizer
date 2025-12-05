@@ -1,4 +1,4 @@
-import { ByYearGrouper, FileSegregator, GroupedFiles } from '../lib/file_segregator';
+import { ByYearGrouper, FileSegregator, GroupedFiles } from '../src/lib/file_segregator';
 import * as fs from 'fs';
 
 describe('testing ByYearGrouper', () => {
@@ -20,6 +20,23 @@ describe('testing ByYearGrouper', () => {
         } as any);
 
 
+        let grouper = new ByYearGrouper();
+        let key = await grouper.getKey(f1);
+
+        expect(key).toBe(expected_key);
+    })
+});
+
+describe('testing ByYearGrouper', () => {
+
+    it("test when fs does not reutrn date", async () => {
+        // Mock statSync
+        jest.spyOn(fs.promises, 'stat').mockRejectedValue(new Error("test error"));
+        let f1 = {
+            name: "test_img.jpg",
+            parentPath: "/fake/path/",
+        } as unknown as fs.Dirent;
+        let expected_key = "unknown-date";
         let grouper = new ByYearGrouper();
         let key = await grouper.getKey(f1);
 

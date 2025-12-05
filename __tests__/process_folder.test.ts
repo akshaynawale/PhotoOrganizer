@@ -6,13 +6,13 @@ jest.mock('electron', () => ({
     },
 }));
 
-import { MediaFilesHandler } from '../lib/process_folder';
+import { MediaFilesHandler } from '../src/lib/process_folder';
 import { dialog, BrowserWindow } from 'electron';
 import * as fs from 'fs';
-import { ChannelLogger } from '../lib/channel_logger';
-import { GroupedFiles } from '../lib/file_segregator';
-import { FileMover } from '../lib/file_mover';
-jest.mock("../lib/file_mover")
+import { ChannelLogger } from '../src/lib/channel_logger';
+import { GroupedFiles } from '../src/lib/file_segregator';
+import { FileMover } from '../src/lib/file_mover';
+jest.mock("../src/lib/file_mover")
 
 // To use the mocked versions in tests, we cast them to Jest's mock types.
 const mockedDialog = dialog as jest.Mocked<typeof dialog>;

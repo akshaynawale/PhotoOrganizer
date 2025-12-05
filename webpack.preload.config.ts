@@ -5,7 +5,7 @@ import path from "node:path";
 const webpackpreloadconfig: Configuration = {
     mode: "production",
     target: "electron-preload",
-    entry: "./src/preload.ts",
+    entry: "./src/preload/preload.ts",
     output: {
         path: path.resolve(import.meta.dirname, "dist"),
         filename: "preload.js",

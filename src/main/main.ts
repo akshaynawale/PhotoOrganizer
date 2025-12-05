@@ -28,7 +28,7 @@ class PhotoOrganizer {
             }
         });
         // initialize the channel logger
-        window.loadFile("renderer/index.html");
+        window.loadFile("./src/renderer/index.html");
         return window
     }
 

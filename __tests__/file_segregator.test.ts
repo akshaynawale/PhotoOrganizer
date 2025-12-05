@@ -1,4 +1,4 @@
-import { ByYearGrouper, FileSegregator, GroupedFiles } from '../src/lib/file_segregator';
+import { ByYearGrouper, FileSegregator, GroupedFiles } from '../src/main/lib/file_segregator';
 import * as fs from 'fs';
 
 describe('testing ByYearGrouper', () => {

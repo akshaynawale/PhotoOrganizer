@@ -1,7 +1,7 @@
 import { PathLike } from "original-fs";
-import { ChannelLogger } from "../src/lib/channel_logger";
-import { FileMover } from "../src/lib/file_mover";
-import { GroupedFiles } from "../src/lib/file_segregator";
+import { ChannelLogger } from "../src/main/lib/channel_logger";
+import { FileMover } from "../src/main/lib/file_mover";
+import { GroupedFiles } from "../src/main/lib/file_segregator";
 import * as fs from 'fs';
 import path from "path";
 

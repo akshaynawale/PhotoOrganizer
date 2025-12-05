@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["./renderer/renderer.ts"],
-  "exclude": ["node_modules", "src/main.ts", "dist"]
+  "include": ["./src/renderer/renderer.ts"],
+  "exclude": ["node_modules", "src/main/main.ts", "dist"]
 }

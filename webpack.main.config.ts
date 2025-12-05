@@ -4,7 +4,7 @@ import path from "node:path";
 const webpackmainconfig: Configuration = {
     mode: "production",
     target: "electron-main",
-    entry: "./src/main.ts",
+    entry: "./src/main/main.ts",
     output: {
         path: path.resolve(import.meta.dirname, "dist"),
         filename: "main.js",

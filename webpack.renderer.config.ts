@@ -4,7 +4,7 @@ import type { Configuration } from "webpack";
 const webpackrendererconfig: Configuration = {
     mode: "production",
     target: "electron-renderer",
-    entry: "./renderer/renderer.ts",
+    entry: "./src/renderer/renderer.ts",
     output: {
         path: path.resolve(import.meta.dirname, "dist"),
         filename: "renderer.js",

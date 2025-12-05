@@ -11,9 +11,9 @@
     "resolveJsonModule": true,
   },
   "include": [
-    "src/main.ts",
+    "src/main/main.ts",
     "__tests__/**/*.ts",
-    "src/lib/**/*.ts"
+    "src/main/lib/**/*.ts"
   ],
-  "exclude": ["node_modules", "renderer/renderer.ts", "dist"]
+  "exclude": ["node_modules", "src/renderer/renderer.ts", "dist"]
 }

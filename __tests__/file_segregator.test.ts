@@ -32,8 +32,10 @@ describe('testing ByYearGrouper', () => {
     it("test when fs does not reutrn date", async () => {
         // Mock statSync
         jest.spyOn(fs.promises, 'stat').mockRejectedValue(new Error("test error"));
+
         let f1 = {
             name: "test_img.jpg",
+            isFile: () => true,
             parentPath: "/fake/path/",
         } as unknown as fs.Dirent;
         let expected_key = "unknown-date";

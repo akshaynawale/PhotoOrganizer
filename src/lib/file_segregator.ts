@@ -74,7 +74,7 @@ export class ByYearGrouper {
         } catch (err) {
             // If fs.stat also fails (e.g., file not found), log the error
             // and return a fallback key to prevent the promise from rejecting.
-            console.error(`Failed to stat file: ${file.name} at ${file_path}. Error: ${err}`);
+            console.log(`Failed to stat file: ${file.name} at ${file_path}. Error: ${err}`);
             return "unknown-date"; // Provide a fallback key when no date can be determined
         }
     }

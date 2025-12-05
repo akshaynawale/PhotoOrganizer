@@ -1,10 +1,10 @@
 import { dialog } from "electron";
 import * as fs from 'fs';
 import path from 'path';
-import { ChannelLogger } from "./channel_logger.js";
+import { ChannelLogger } from "./channel_logger";
 import { BrowserWindow } from "electron";
-import { ByYearGrouper, FileSegregator, GroupedFiles } from "./file_segregator.js";
-import { FileMover } from "./file_mover.js";
+import { ByYearGrouper, FileSegregator, GroupedFiles } from "./file_segregator";
+import { FileMover } from "./file_mover";
 
 
 export class MediaFilesHandler {

@@ -23,11 +23,6 @@ const config: Config = {
       },
     ],
   },
-  moduleNameMapper: {
-    "\.\.\/src/lib/(.*)\\.js$": "<rootDir>/src/lib/$1.ts", // to convert ../lib like js import to .ts
-    "\.\/(channel_logger|file_segregator|file_mover|process_folder)\\.js$": "<rootDir>/src/lib/$1.ts",
-    // to convert the ./<file-name>.js like import to .ts 
-  },
 
   testMatch: [
     "__tests__/**/*.(spec|test).ts",

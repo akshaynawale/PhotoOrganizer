@@ -1,4 +1,4 @@
-import { ChannelLogger } from '../src/lib/channel_logger.js';
+import { ChannelLogger } from '../src/lib/channel_logger';
 import { BrowserWindow } from 'electron';
 
 // We need to mock the BrowserWindow and its webContents property for our unit test,
